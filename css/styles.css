@@ -1,0 +1,169 @@
+/* Hardware Diagnostic Decision Matrix & Flow Engine - Custom Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #0f1523;
+  --bg-card: #151c2e;
+  --border-color: #232d45;
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --accent-indigo: #6366f1;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: #e2e8f0;
+  overflow-x: hidden;
+}
+
+.font-mono-tech {
+  font-family: 'Fira Code', monospace;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Grid Background for Graph Canvas */
+.canvas-grid-bg {
+  background-color: #080b12;
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.07) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Graph Connection Paths */
+.graph-edge {
+  fill: none;
+  stroke: #334155;
+  stroke-width: 2.2;
+  transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+.graph-edge:hover {
+  stroke: #94a3b8;
+  stroke-width: 3.5;
+  cursor: pointer;
+}
+
+.graph-edge.active-edge {
+  stroke: #06b6d4;
+  stroke-width: 3.5;
+  stroke-dasharray: 8 4;
+  animation: dashFlow 1.2s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.6));
+}
+
+.graph-edge.red-edge {
+  stroke: #f43f5e;
+}
+.graph-edge.green-edge {
+  stroke: #10b981;
+}
+.graph-edge.yellow-edge {
+  stroke: #f59e0b;
+}
+.graph-edge.blue-edge {
+  stroke: #38bdf8;
+}
+
+@keyframes dashFlow {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Node Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.5), inset 0 0 15px rgba(6, 182, 212, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(6, 182, 212, 0.85), inset 0 0 22px rgba(6, 182, 212, 0.4);
+  }
+}
+
+.node-active {
+  animation: pulseGlow 2s infinite ease-in-out;
+  border-color: #22d3ee !important;
+}
+
+/* Multimeter Digital Readout Styling */
+.digital-readout {
+  font-family: 'Fira Code', monospace;
+  background: #05080f;
+  border: 1px solid #1e293b;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.05em;
+}
+
+/* Glassmorphism Panels */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.glass-panel-subtle {
+  background: rgba(15, 21, 35, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(35, 45, 69, 0.6);
+}
+
+/* Mobile SVG Touch Gestures & Collapsible Accordions */
+#nodal-svg {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+details.diag-accordion > summary {
+  list-style: none;
+}
+details.diag-accordion > summary::-webkit-details-marker {
+  display: none;
+}
+details.diag-accordion[open] > summary .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+/* Print Styles for Technician Work Orders */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .glass-panel, .glass-panel-subtle {
+    background: transparent !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    color: #000 !important;
+  }
+}
