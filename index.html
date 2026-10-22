@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-[#0a0d14]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hardware Diagnostic Decision Matrix & Flow Engine</title>
+  <meta name="description" content="Simulador interactivo de diagnóstico por árbol de decisiones y visualizador de grafos nodales para microelectrónica y hardware.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2'><polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/></svg>">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0a0d14',
+              surface: '#0f1523',
+              card: '#151c2e',
+              border: '#232d45',
+              cyan: '#06b6d4',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              rose: '#f43f5e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="h-full flex flex-col bg-[#0a0d14] text-slate-200 antialiased select-none">
+
+  <!-- Global Application Header (2 filas en móvil < md, 1 fila en escritorio) -->
+  <header class="no-print h-auto md:h-16 py-2.5 md:py-0 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md px-3 md:px-6 flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2.5 gap-x-3 z-30 flex-shrink-0">
+    <!-- Fila 1 Izquierda: Brand & Title -->
+    <div class="order-1 flex items-center gap-2.5 min-w-0">
+      <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-950/80 text-white font-bold flex-shrink-0">
+        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <div class="flex items-center gap-1.5">
+          <h1 class="font-bold text-sm md:text-base text-white tracking-tight truncate">
+            <span class="sm:hidden">Diagnóstico Taller</span>
+            <span class="hidden sm:inline">Hardware Diagnostic Flow Engine</span>
+          </h1>
+          <span class="px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 text-[9px] md:text-[10px] font-mono-tech font-semibold flex-shrink-0">
+            PRO
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400 hidden lg:block truncate">
+          Decision Matrix & Nodal Graph Visualizer para Microelectrónica
+        </p>
+      </div>
+    </div>
+
+    <!-- Fila 2 en Móvil (100% ancho 50/50) / Centro en Escritorio: Preset Selector & Quick Search -->
+    <div class="order-3 md:order-2 w-full md:w-auto md:flex-1 md:max-w-xl grid grid-cols-2 gap-2 items-center">
+      <div class="relative w-full min-w-0">
+        <select id="preset-selector" aria-label="Seleccionar protocolo de diagnóstico" class="w-full bg-slate-900 border border-slate-700/80 hover:border-slate-600 text-xs text-cyan-300 font-medium rounded-xl px-2.5 md:px-3 py-2 pr-7 focus:outline-none focus:border-cyan-500 transition-colors truncate">
+          <!-- Populated by JavaScript -->
+        </select>
+      </div>
+
+      <!-- Quick Search Input & Dropdown -->
+      <div class="relative w-full min-w-0" id="quick-search-wrapper">
+        <div class="relative flex items-center">
+          <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="global-quick-search" placeholder="Buscar falla o paso..." autocomplete="off" class="w-full bg-slate-900/90 border border-slate-700/80 hover:border-slate-600 text-xs text-slate-200 placeholder-slate-500 rounded-xl pl-8 pr-6 py-2 focus:outline-none focus:border-cyan-500 transition-all">
+          <button id="btn-clear-search" class="hidden absolute right-2 text-slate-500 hover:text-slate-300 text-xs font-bold">✕</button>
+        </div>
+        <div id="quick-search-results" class="absolute top-full right-0 md:left-0 w-[88vw] sm:w-80 md:w-full mt-1.5 max-h-80 overflow-y-auto bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl shadow-2xl z-50 hidden divide-y divide-slate-800">
+          <!-- Populated by quickSearch.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 1 Derecha: View Switcher (Desktop) & Action Buttons -->
+    <div class="order-2 md:order-3 flex items-center gap-1.5 md:gap-2 flex-shrink-0 ml-auto md:ml-0">
+      <!-- View Mode Buttons (Desktop XL) -->
+      <div class="hidden xl:flex items-center p-1 bg-slate-950 border border-slate-800 rounded-xl">
+        <button id="btn-mode-split" title="Vista Dividida (Simulador + Grafo)" class="px-3 py-1.5 rounded-lg bg-cyan-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-cyan-950/80 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+          <span>Dual</span>
+        </button>
+        <button id="btn-mode-runner" title="Simulador Paso a Paso Completo" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs flex items-center gap-1.5 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Simulador</span>
+        </button>
+        <button id="btn-mode-graph" title="Visualizador de Grafo Nodal Completo" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs flex items-center gap-1.5 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+          <span>Grafo Nodal</span>
+        </button>
+        <button id="btn-mode-matrix" title="Matriz de Decisiones Tabular" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs flex items-center gap-1.5 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span>Matriz</span>
+        </button>
+      </div>
+
+      <!-- Tools & Actions -->
+      <div class="flex items-center gap-1.5">
+        <!-- Voltage Injection Calculator Button -->
+        <button id="btn-open-calc" class="p-2 md:px-2.5 md:py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 hover:text-amber-300 text-xs font-semibold flex items-center gap-1.5 transition-colors" title="Calculadora Rápida de Inyección de Tensión (Cortos)">
+          <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span class="hidden sm:inline">Inyección V</span>
+        </button>
+
+        <!-- Sound Toggle -->
+        <button id="btn-toggle-sound" class="p-2 md:px-2.5 md:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs flex items-center gap-1.5 transition-colors">
+          <!-- Populated by JS -->
+        </button>
+
+        <!-- JSON Editor -->
+        <button id="btn-open-editor" class="p-2 md:px-3 md:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-purple-400 text-xs flex items-center gap-1.5 transition-colors" title="Editor / Importador JSON">
+          <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          <span class="hidden md:inline">JSON</span>
+        </button>
+
+        <!-- Generate Technical Report -->
+        <button id="btn-open-report" class="p-2 md:px-3 md:py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-cyan-950 transition-all" title="Orden de Trabajo / Reporte Técnico">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span class="hidden md:inline">Reporte</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport Workspace (con padding inferior pb-14 en móvil para la barra fija) -->
+  <main class="flex-1 relative overflow-hidden flex flex-col pb-14 lg:pb-0">
+    <!-- Split / Single Workspace View (Runner & Graph) -->
+    <div id="main-workspace" class="w-full h-full flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-slate-800/80">
+      <!-- Left: Diagnostic Runner Pane -->
+      <section id="runner-pane" class="w-full lg:w-[46%] xl:w-[42%] h-full flex flex-col bg-slate-950/40 z-10">
+        <div id="runner-container" class="w-full h-full"></div>
+      </section>
+
+      <!-- Right: Nodal Flow Graph Engine Pane -->
+      <section id="graph-pane" class="hidden lg:flex flex-1 h-full relative">
+        <div id="graph-container" class="w-full h-full"></div>
+      </section>
+    </div>
+
+    <!-- Fullscreen Decision Matrix Pane -->
+    <section id="matrix-pane" class="w-full h-full hidden bg-slate-950/60 z-20">
+      <div id="matrix-container" class="w-full h-full"></div>
+    </section>
+  </main>
+
+  <!-- Barra de Navegación Inferior Fija para Móvil / Tablet (< 1024px) -->
+  <nav id="mobile-bottom-nav" class="no-print lg:hidden fixed bottom-0 left-0 right-0 h-14 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 z-40 flex justify-around items-center px-2">
+    <button id="btn-mob-runner" type="button" class="flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-cyan-400 border-t-2 border-cyan-400 bg-cyan-950/20 font-semibold text-[11px] transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <span>Diagnóstico</span>
+    </button>
+    <button id="btn-mob-graph" type="button" class="flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-slate-200 border-t-2 border-transparent font-medium text-[11px] transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+      <span>Mapa Nodal</span>
+    </button>
+    <button id="btn-mob-matrix" type="button" class="flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-slate-200 border-t-2 border-transparent font-medium text-[11px] transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      <span>Matriz</span>
+    </button>
+  </nav>
+
+  <!-- Módulos de la Aplicación (Carga secuencial clásica 100% compatible con file:// sin bloqueo CORS) -->
+  <script src="js/config.js"></script>
+  <script src="js/data/schema.js"></script>
+  <script src="js/data/presets.js"></script>
+  <script src="js/engine/audioEngine.js"></script>
+  <script src="js/engine/stateManager.js"></script>
+  <script src="js/visualizer/layoutEngine.js"></script>
+  <script src="js/visualizer/graphEngine.js"></script>
+  <script src="js/ui/runnerView.js"></script>
+  <script src="js/ui/matrixView.js"></script>
+  <script src="js/ui/reportModal.js"></script>
+  <script src="js/ui/editorModal.js"></script>
+  <script src="js/ui/quickSearch.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
